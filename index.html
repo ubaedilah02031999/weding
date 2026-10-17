@@ -37,7 +37,7 @@
 
   <div class="nav-tabs">
     <button class="tab-btn active" onclick="switchTab('camera', this)">📷 Kamera</button>
-    <button class="tab-btn" onclick="switchTab('gallery', this); loadGallery();">🖼️ Galeri</button>
+    <button class="tab-btn" onclick="window.open(BACKEND_URL + '?action=getPhotos', '_blank')">🖼️ Lihat Galeri</button>
   </div>
   
   <div class="card">
