@@ -3,99 +3,412 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Wedding Photo Booth & Gallery</title>
+  <meta name="theme-color" content="#10131d">
+  <title>Wedding Photo Booth</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-    body { background: #f4f6f8; text-align: center; padding: 10px; color: #333; }
-    h1 { font-size: 1.3rem; margin-top: 10px; }
-    
-    .nav-tabs { display: flex; justify-content: center; gap: 10px; margin: 15px 0; }
-    .tab-btn { padding: 8px 16px; border: none; background: #ddd; border-radius: 20px; font-weight: bold; cursor: pointer; }
-    .tab-btn.active { background: #e91e63; color: #fff; }
+    :root {
+      --bg: #0b0e16;
+      --panel: #141925;
+      --panel-soft: #1b2130;
+      --line: rgba(255,255,255,.09);
+      --text: #f6f6fa;
+      --muted: #a4a9b8;
+      --pink: #f05283;
+      --pink-deep: #d9366a;
+      --gold: #e8c78a;
+      --green: #67d8a0;
+    }
 
-    .card { background: #fff; max-width: 450px; margin: 0 auto; padding: 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body {
+      min-height: 100vh;
+      padding: 24px 16px 38px;
+      color: var(--text);
+      background:
+        radial-gradient(ellipse at 50% -10%, rgba(240,82,131,.16), transparent 42%),
+        radial-gradient(ellipse at 100% 50%, rgba(88,106,168,.10), transparent 35%),
+        var(--bg);
+    }
+    button { font: inherit; }
+    .app-shell { width: 100%; max-width: 1100px; margin: 0 auto; }
+
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between; gap: 18px;
+      max-width: 1000px; margin: 0 auto 28px;
+    }
+    .brand { display: flex; align-items: center; gap: 13px; min-width: 0; }
+    .brand-mark {
+      width: 48px; height: 48px; flex: 0 0 48px; display: grid; place-items: center;
+      border: 1px solid rgba(240,82,131,.35); border-radius: 16px;
+      color: #ffc0d2; background: linear-gradient(145deg, rgba(240,82,131,.19), rgba(232,199,138,.08));
+      box-shadow: inset 0 1px rgba(255,255,255,.06);
+    }
+    .brand-mark svg { width: 25px; height: 25px; }
+    .eyebrow { color: var(--gold); font-size: .68rem; font-weight: 800; letter-spacing: .19em; text-transform: uppercase; }
+    h1 { margin-top: 3px; font-size: clamp(1.15rem, 3.2vw, 1.65rem); line-height: 1.2; font-weight: 760; letter-spacing: -.035em; }
+    h1 span { color: #f58cac; }
+    .brand-subtitle { margin-top: 5px; color: var(--muted); font-size: .85rem; }
+    .live-pill { display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 99px; color: #dce1ed; background: rgba(255,255,255,.035); font-size: .7rem; letter-spacing: .08em; font-weight: 750; white-space: nowrap; }
+    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 4px rgba(103,216,160,.12); }
+
+    .nav-tabs { display: flex; justify-content: center; gap: 7px; width: fit-content; max-width: 100%; margin: 0 auto 21px; padding: 5px; border: 1px solid var(--line); border-radius: 15px; background: rgba(255,255,255,.035); }
+    .tab-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 10px 17px; border: 1px solid transparent; border-radius: 11px; background: transparent; color: #aeb4c3; font-size: .87rem; font-weight: 750; cursor: pointer; transition: .2s ease; }
+    .tab-btn:hover { color: #fff; background: rgba(255,255,255,.055); }
+    .tab-btn.active { color: #fff; border-color: rgba(240,82,131,.26); background: linear-gradient(135deg, rgba(240,82,131,.22), rgba(217,54,106,.12)); box-shadow: inset 0 1px rgba(255,255,255,.06); }
+    .tab-btn svg { width: 17px; height: 17px; }
+
+    .workspace { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 18px; align-items: start; max-width: 1000px; margin: 0 auto; }
+    .card, .side-card { border: 1px solid var(--line); border-radius: 24px; background: linear-gradient(145deg, rgba(25,31,45,.96), rgba(17,21,32,.98)); box-shadow: 0 24px 70px rgba(0,0,0,.24), inset 0 1px rgba(255,255,255,.035); }
+    .card { min-width: 0; padding: 20px; }
+    .section-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .section-heading h2 { margin-top: 5px; font-size: 1.2rem; font-weight: 720; letter-spacing: -.025em; }
+    .camera-status { display: inline-flex; align-items: center; gap: 7px; color: #cad1de; font-size: .69rem; font-weight: 800; letter-spacing: .08em; }
+    .camera-status .live-dot { width: 6px; height: 6px; }
+
+    .camera-select { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; padding: 5px; border: 1px solid var(--line); border-radius: 14px; background: rgba(0,0,0,.15); }
+    .camera-choice { display: flex; justify-content: center; align-items: center; gap: 8px; min-height: 43px; padding: 9px 12px; border: 1px solid transparent; border-radius: 10px; color: #9ea5b5; background: transparent; font-size: .82rem; font-weight: 750; cursor: pointer; transition: background .2s ease, color .2s ease, border-color .2s ease; }
+    .camera-choice svg { width: 17px; height: 17px; }
+    .camera-choice:hover { color: #fff; background: rgba(255,255,255,.05); }
+    .camera-choice.active { color: #fff; border-color: rgba(240,82,131,.25); background: rgba(240,82,131,.14); }
+    .camera-choice:disabled { opacity: .5; cursor: wait; }
+
+    .video-box { position: relative; width: 100%; height: clamp(370px, 60vw, 535px); max-height: 62vh; min-height: 320px; overflow: hidden; border: 1px solid rgba(255,255,255,.12); border-radius: 19px; background: #050608; isolation: isolate; }
+    video { display: block; width: 100%; height: 100%; object-fit: cover; background: #050608; }
+    .camera-vignette { position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(180deg, rgba(0,0,0,.37), transparent 22%, transparent 68%, rgba(0,0,0,.53)); }
+    .grid-lines { position: absolute; inset: 0; z-index: 2; pointer-events: none; opacity: .5; background-image: linear-gradient(to right, transparent calc(33.333% - .5px), rgba(255,255,255,.20) 33.333%, transparent calc(33.333% + .5px), transparent calc(66.666% - .5px), rgba(255,255,255,.20) 66.666%, transparent calc(66.666% + .5px)), linear-gradient(to bottom, transparent calc(33.333% - .5px), rgba(255,255,255,.20) 33.333%, transparent calc(33.333% + .5px), transparent calc(66.666% - .5px), rgba(255,255,255,.20) 66.666%, transparent calc(66.666% + .5px)); }
+    .hud-top { position: absolute; z-index: 3; top: 14px; left: 14px; right: 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px; pointer-events: none; }
+    .hud-chip { display: inline-flex; align-items: center; gap: 7px; max-width: 70%; padding: 8px 10px; color: #fff; border: 1px solid rgba(255,255,255,.18); border-radius: 9px; background: rgba(8,10,15,.55); backdrop-filter: blur(12px); font-size: .66rem; font-weight: 800; letter-spacing: .08em; }
+    .hud-chip svg { width: 14px; height: 14px; color: #ffc3d5; }
+    .hud-quality { color: #fff; padding: 7px 9px; border-radius: 8px; background: rgba(8,10,15,.5); border: 1px solid rgba(255,255,255,.15); font-size: .65rem; font-weight: 800; letter-spacing: .08em; }
+    .focus-frame { position: absolute; z-index: 2; top: 50%; left: 50%; width: 48%; height: 46%; transform: translate(-50%,-50%); opacity: .82; pointer-events: none; }
+    .focus-frame span { position: absolute; width: 23px; height: 23px; border-color: rgba(255,255,255,.88); border-style: solid; filter: drop-shadow(0 1px 4px rgba(0,0,0,.5)); }
+    .focus-frame .tl { top: 0; left: 0; border-width: 2px 0 0 2px; border-radius: 5px 0 0; }
+    .focus-frame .tr { top: 0; right: 0; border-width: 2px 2px 0 0; border-radius: 0 5px 0 0; }
+    .focus-frame .bl { bottom: 0; left: 0; border-width: 0 0 2px 2px; border-radius: 0 0 0 5px; }
+    .focus-frame .br { bottom: 0; right: 0; border-width: 0 2px 2px 0; border-radius: 0 0 5px; }
+    .focus-center { position: absolute; top: 50%; left: 50%; width: 7px; height: 7px; border: 1px solid rgba(255,255,255,.8); border-radius: 50%; transform: translate(-50%,-50%); box-shadow: 0 0 0 5px rgba(255,255,255,.12); }
+    .hud-bottom { position: absolute; z-index: 3; bottom: 14px; left: 14px; right: 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; pointer-events: none; }
+    .mode-label { color: #fff; font-size: .66rem; font-weight: 850; letter-spacing: .12em; text-shadow: 0 1px 5px #000; }
+    .mode-hint { color: rgba(255,255,255,.78); font-size: .69rem; }
+
+    .shoot-controls { display: grid; grid-template-columns: 1fr 74px 1fr; align-items: center; gap: 10px; padding: 20px 3px 4px; }
+    .control-copy { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+    .control-copy small { color: var(--gold); font-size: .64rem; letter-spacing: .15em; font-weight: 850; }
+    .control-copy span { color: #d4d7e1; font-size: .75rem; line-height: 1.45; }
+    .shutter-button { width: 72px; height: 72px; justify-self: center; display: grid; place-items: center; border: 2px solid rgba(255,255,255,.92); border-radius: 50%; color: white; background: transparent; box-shadow: 0 0 0 5px rgba(255,255,255,.07), 0 8px 24px rgba(240,82,131,.13); cursor: pointer; transition: transform .14s ease, box-shadow .2s ease, opacity .2s ease; }
+    .shutter-button:hover { transform: scale(1.045); box-shadow: 0 0 0 7px rgba(240,82,131,.13), 0 9px 28px rgba(240,82,131,.22); }
+    .shutter-button:active { transform: scale(.96); }
+    .shutter-button:disabled { opacity: .42; cursor: not-allowed; transform: none; }
+    .shutter-inner { width: 54px; height: 54px; display: grid; place-items: center; border: 3px solid rgba(255,255,255,.95); border-radius: 50%; background: linear-gradient(145deg, #fb6794, #db2d64); box-shadow: inset 0 2px 4px rgba(255,255,255,.25); }
+    .shutter-inner svg { width: 24px; height: 24px; }
+    .quality-copy { display: flex; justify-content: flex-end; align-items: center; gap: 8px; color: #e0e3ec; }
+    .quality-copy svg { width: 24px; height: 24px; color: var(--gold); }
+    .quality-copy span { font-size: .65rem; line-height: 1.5; letter-spacing: .08em; font-weight: 800; text-align: left; }
+    .msg { min-height: 20px; margin-top: 12px; padding: 10px 12px; border: 1px solid rgba(255,255,255,.07); border-radius: 10px; color: #bfc5d2; background: rgba(255,255,255,.035); font-size: .79rem; line-height: 1.5; text-align: center; }
+
+    .side-column { display: flex; flex-direction: column; gap: 14px; }
+    .side-card { padding: 19px; }
+    .side-card h3 { margin: 7px 0 8px; font-size: 1rem; letter-spacing: -.02em; }
+    .side-card p { color: var(--muted); font-size: .82rem; line-height: 1.65; }
+    .tips-list { display: flex; flex-direction: column; gap: 15px; margin-top: 19px; }
+    .tip { display: flex; align-items: flex-start; gap: 11px; }
+    .tip-icon { display: grid; place-items: center; width: 33px; height: 33px; flex: 0 0 33px; border: 1px solid rgba(232,199,138,.18); border-radius: 10px; color: var(--gold); background: rgba(232,199,138,.07); }
+    .tip-icon svg { width: 16px; height: 16px; }
+    .tip strong { display: block; margin: 1px 0 4px; color: #f0f1f6; font-size: .8rem; }
+    .tip span { display: block; color: var(--muted); font-size: .74rem; line-height: 1.5; }
+    .privacy-note { display: flex; align-items: flex-start; gap: 9px; margin-top: 18px; padding-top: 15px; border-top: 1px solid var(--line); color: #9fa7b8; font-size: .72rem; line-height: 1.55; }
+    .privacy-note svg { width: 16px; height: 16px; flex: 0 0 16px; color: var(--green); }
+
     .page { display: none; }
     .page.active { display: block; }
+    #galleryPage { max-width: 1000px; margin: 0 auto; }
+    .gallery-card { padding: 20px; }
+    .gallery-heading { text-align: left; }
+    .gallery-heading h2 { margin-top: 6px; font-size: 1.25rem; }
+    .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-top: 17px; max-height: 620px; overflow-y: auto; }
+    .gallery-item { overflow: hidden; border: 1px solid var(--line); border-radius: 13px; background: var(--panel-soft); box-shadow: 0 5px 18px rgba(0,0,0,.12); }
+    .gallery-item img { display: block; width: 100%; height: 150px; object-fit: cover; }
+    .download-btn { display: block; padding: 10px; color: #fff; background: #39445b; text-decoration: none; font-size: .76rem; font-weight: 750; transition: background .2s; }
+    .download-btn:hover { background: var(--pink-deep); }
+    .footer-note { margin: 23px auto 0; color: #737c8e; font-size: .72rem; text-align: center; }
 
-    .video-box { width: 100%; height: 320px; background: #000; border-radius: 8px; overflow: hidden; position: relative; margin-bottom: 15px; }
-    video { width: 100%; height: 100%; object-fit: cover; }
-    .badge { background: #fff3cd; color: #856404; padding: 6px 12px; border-radius: 20px; display: inline-block; font-weight: bold; font-size: 0.85rem; margin-bottom: 10px; }
-    .btn { background: #e91e63; color: white; border: none; width: 65px; height: 65px; border-radius: 50%; font-size: 1.4rem; cursor: pointer; box-shadow: 0 4px 8px rgba(233,30,99,0.3); }
-    .btn:disabled { background: #ccc; cursor: not-allowed; }
-    .msg { margin-top: 12px; font-size: 0.85rem; color: #555; }
-
-    /* Gallery Grid */
-    .gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px; max-height: 400px; overflow-y: auto; }
-    .gallery-item { background: #f9f9f9; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-    .gallery-item img { width: 100%; height: 130px; object-fit: cover; display: block; }
-    .download-btn { display: block; background: #2196F3; color: white; text-decoration: none; padding: 6px; font-size: 0.75rem; font-weight: bold; }
+    @media (max-width: 820px) {
+      body { padding: 19px 12px 30px; }
+      .workspace { grid-template-columns: minmax(0, 1fr); max-width: 560px; }
+      .side-column { display: grid; grid-template-columns: 1fr 1fr; }
+      .side-card { padding: 16px; }
+      .tips-list { gap: 12px; }
+      .topbar { max-width: 560px; }
+    }
+    @media (max-width: 520px) {
+      body { padding: 15px 9px 25px; }
+      .topbar { align-items: flex-start; margin-bottom: 20px; }
+      .brand { gap: 10px; }
+      .brand-mark { width: 42px; height: 42px; flex-basis: 42px; border-radius: 13px; }
+      .brand-subtitle { max-width: 245px; font-size: .76rem; }
+      .live-pill { padding: 7px 8px; font-size: .57rem; gap: 6px; }
+      .live-pill .live-dot { width: 6px; height: 6px; }
+      .nav-tabs { margin-bottom: 14px; }
+      .tab-btn { min-height: 40px; padding: 9px 13px; font-size: .79rem; }
+      .card { padding: 13px; border-radius: 19px; }
+      .section-heading { margin: 3px 1px 13px; }
+      .section-heading h2 { font-size: 1.05rem; }
+      .camera-status { font-size: .59rem; }
+      .camera-select { margin-bottom: 9px; }
+      .camera-choice { min-height: 40px; font-size: .76rem; }
+      .video-box { height: min(64vh, 480px); min-height: 310px; max-height: none; border-radius: 15px; }
+      .hud-top { top: 10px; left: 10px; right: 10px; }
+      .hud-bottom { bottom: 10px; left: 10px; right: 10px; }
+      .focus-frame { width: 55%; height: 43%; }
+      .shoot-controls { grid-template-columns: 1fr 68px 1fr; gap: 4px; padding-top: 17px; }
+      .shutter-button { width: 64px; height: 64px; }
+      .shutter-inner { width: 48px; height: 48px; }
+      .control-copy span { max-width: 105px; font-size: .67rem; }
+      .quality-copy { gap: 5px; }
+      .quality-copy svg { width: 20px; height: 20px; }
+      .quality-copy span { font-size: .57rem; }
+      .msg { margin-top: 10px; font-size: .74rem; }
+      .side-column { grid-template-columns: 1fr; }
+      .side-card { padding: 17px; }
+      .side-card h3 { font-size: .96rem; }
+      .tips-list { display: grid; grid-template-columns: 1fr; }
+      .gallery-card { padding: 14px; }
+      .gallery-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+      .gallery-item img { height: 135px; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; } }
   </style>
 </head>
 <body>
-
-  <h1>Wedding Photo Booth</h1>
-
-  <div class="nav-tabs">
-    <button class="tab-btn active" onclick="switchTab('camera', this)">📷 Kamera</button>
-    <button class="tab-btn" onclick="window.open(BACKEND_URL + '?action=getGallery', '_blank')">🖼️ Lihat Galeri</button>
-  </div>
-  
-  <div class="card">
-    
-    <!-- PAGE 1: KAMERA -->
-    <div id="cameraPage" class="page active">
-      <div class="badge">Sisa Kuota: <span id="quota">5</span>/5</div>
-      <div class="video-box">
-        <video id="cam" autoplay playsinline muted></video>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h2l1.2-1.5h4.6L15.5 6h2A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z"/><circle cx="12" cy="12.5" r="3.5"/><path d="m17.2 9 .01 0"/></svg>
+        </div>
+        <div>
+          <p class="eyebrow">WEDDING MOMENTS</p>
+          <h1>Wedding <span>Photo Booth</span></h1>
+          <p class="brand-subtitle">Abadikan momen indah bersama orang tersayang.</p>
+        </div>
       </div>
-      <button id="snapBtn" class="btn" onclick="capture()">📸</button>
-      <div id="info" class="msg">Posisikan wajah, lalu tekan tombol foto</div>
+      <div class="live-pill"><span class="live-dot"></span> PHOTO STUDIO</div>
+    </header>
+
+    <div class="nav-tabs" aria-label="Navigasi">
+      <button class="tab-btn active" onclick="switchTab('camera', this)" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h2l1.4-1.5h4.2L15.5 5h2A2.5 2.5 0 0 1 20 7.5v10a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5z"/><circle cx="12" cy="12.5" r="3.5"/></svg>
+        Kamera
+      </button>
+      <button class="tab-btn" onclick="window.open(BACKEND_URL + '?action=getGallery', '_blank')" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="2.5"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m20.5 15-5-5L5 20.5"/></svg>
+        Lihat Galeri
+      </button>
     </div>
 
-    <!-- PAGE 2: GALERI -->
-    <div id="galleryPage" class="page">
-      <h3>Galeri Foto Tamu</h3>
-      <div id="galleryGrid" class="gallery-grid">
-        <p style="grid-column: span 2; color: #777; padding: 20px;">Memuat foto...</p>
-      </div>
-    </div>
+    <main>
+      <div class="workspace page active" id="cameraPage">
+        <section class="card" aria-label="Kamera foto">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">PHOTO STUDIO</p>
+              <h2>Siap untuk berfoto?</h2>
+            </div>
+            <div class="camera-status"><span class="live-dot"></span> LIVE PREVIEW</div>
+          </div>
 
+          <div class="camera-select" role="group" aria-label="Pilih kamera">
+            <button id="cameraBackBtn" class="camera-choice active" type="button" onclick="setCameraMode('environment')" aria-pressed="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2.5"/><circle cx="12" cy="12.5" r="3.5"/><path d="M7 6V4.5h3V6"/></svg>
+              Kamera Belakang
+            </button>
+            <button id="cameraFrontBtn" class="camera-choice" type="button" onclick="setCameraMode('user')" aria-pressed="false">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10 5h4"/><circle cx="12" cy="17.5" r=".7"/></svg>
+              Kamera Depan
+            </button>
+          </div>
+
+          <div class="video-box">
+            <video id="cam" autoplay playsinline muted></video>
+            <div class="camera-vignette"></div>
+            <div class="grid-lines"></div>
+            <div class="hud-top">
+              <div class="hud-chip">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                LIVE VIEW
+              </div>
+              <div class="hud-quality">HD · AUTO</div>
+            </div>
+            <div class="focus-frame" aria-hidden="true">
+              <span class="tl"></span><span class="tr"></span><span class="bl"></span><span class="br"></span><i class="focus-center"></i>
+            </div>
+            <div class="hud-bottom">
+              <span class="mode-label" id="cameraModeBadge">REAR CAMERA</span>
+              <span class="mode-hint">Atur posisi terbaikmu</span>
+            </div>
+          </div>
+
+          <div class="shoot-controls">
+            <div class="control-copy">
+              <small>SHUTTER</small>
+              <span>Tekan untuk mengambil foto</span>
+            </div>
+            <button id="snapBtn" class="shutter-button" onclick="capture()" type="button" aria-label="Ambil foto">
+              <span class="shutter-inner">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h2L10 4.5h4L15.5 6h2A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z"/><circle cx="12" cy="12.5" r="3.2"/></svg>
+              </span>
+            </button>
+            <div class="quality-copy" aria-label="Kualitas foto">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.6 5.3 5.9.9-4.3 4.2 1 5.9-5.2-2.8-5.2 2.8 1-5.9-4.3-4.2 5.9-.9z"/></svg>
+              <span>PHOTO<br>QUALITY</span>
+            </div>
+          </div>
+          <div id="info" class="msg" role="status" aria-live="polite">Posisikan wajah, lalu tekan tombol foto.</div>
+        </section>
+
+        <aside class="side-column">
+          <section class="side-card">
+            <p class="eyebrow">MAKE IT MEMORABLE</p>
+            <h3>Kenangan dalam satu klik.</h3>
+            <p>Abadikan momen bersama keluarga dan sahabat. Foto yang berhasil diambil akan tersimpan ke album pernikahan.</p>
+            <div class="tips-list">
+              <div class="tip">
+                <div class="tip-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+                <div><strong>Atur pencahayaan</strong><span>Pilih tempat yang terang agar hasil foto lebih jelas.</span></div>
+              </div>
+              <div class="tip">
+                <div class="tip-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5L5 20"/></svg></div>
+                <div><strong>Periksa bingkai</strong><span>Pastikan semua wajah terlihat di area kamera.</span></div>
+              </div>
+              <div class="tip">
+                <div class="tip-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7v5h-5"/><path d="M4.9 9A7.5 7.5 0 0 1 18 6l2 6M4 17v-5h5"/><path d="M19.1 15A7.5 7.5 0 0 1 6 18l-2-6"/></svg></div>
+                <div><strong>Pilih kamera</strong><span>Gunakan kamera depan untuk selfie atau belakang untuk foto bersama.</span></div>
+              </div>
+            </div>
+            <div class="privacy-note">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11z"/><path d="m9 12 2 2 4-4"/></svg>
+              Foto akan diunggah setelah kamu menekan tombol shutter. Izinkan akses kamera pada browser jika diminta.
+            </div>
+          </section>
+        </aside>
+      </div>
+
+      <!-- PAGE 2: GALERI INTERNAL (dipertahankan untuk kompatibilitas) -->
+      <div id="galleryPage" class="page">
+        <section class="card gallery-card">
+          <div class="gallery-heading">
+            <p class="eyebrow">WEDDING ALBUM</p>
+            <h2>Galeri Foto Tamu</h2>
+          </div>
+          <div id="galleryGrid" class="gallery-grid">
+            <p style="grid-column: span 2; color: #9ea5b5; padding: 20px;">Memuat foto...</p>
+          </div>
+        </section>
+      </div>
+    </main>
+    <p class="footer-note">Made for beautiful moments · Wedding Photo Booth</p>
   </div>
 
   <canvas id="cvs" style="display:none;"></canvas>
 
   <script>
     // -----------------------------------------------------------------
-    // TEMPEL LINK GOOGLE APPS SCRIPT KAMU DI SINI (yang berakhiran /exec)
+    // LINK GOOGLE APPS SCRIPT BACKEND (dipertahankan)
     // -----------------------------------------------------------------
     const BACKEND_URL = "https://script.google.com/macros/s/AKfycbzavoUhqsMd5f-5Pg1ExFVMa5HIo_cmjcj-Oh5tldkBl8d8hBbL72_tR8ozJYyWoVGRAA/exec";
 
     const MAX = 5;
     let count = parseInt(localStorage.getItem('wedding_quota') || "0");
-    
+
     const video = document.getElementById('cam');
-    const quotaSpan = document.getElementById('quota');
     const snapBtn = document.getElementById('snapBtn');
     const info = document.getElementById('info');
     const canvas = document.getElementById('cvs');
+    const cameraBackBtn = document.getElementById('cameraBackBtn');
+    const cameraFrontBtn = document.getElementById('cameraFrontBtn');
+    const cameraModeBadge = document.getElementById('cameraModeBadge');
+
+    let currentFacingMode = 'environment';
+    let activeStream = null;
+    let cameraChanging = false;
 
     updateUI();
 
-    // Inisialisasi Kamera
-    navigator.mediaDevices.getUserMedia({ 
-      video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } }, 
-      audio: false 
-    })
-    .then(stream => { video.srcObject = stream; video.play(); })
-    .catch(err => {
-      navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-      .then(s => { video.srcObject = s; video.play(); })
-      .catch(e => { info.innerText = "Gagal membuka kamera."; });
-    });
+    // Kamera dibuka dengan kamera belakang sebagai pilihan awal.
+    startCamera();
+
+    async function startCamera() {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        info.innerText = "Browser tidak mendukung kamera. Buka halaman melalui HTTPS dan gunakan browser terbaru.";
+        return;
+      }
+
+      cameraChanging = true;
+      cameraBackBtn.disabled = true;
+      cameraFrontBtn.disabled = true;
+
+      if (activeStream) {
+        activeStream.getTracks().forEach(track => track.stop());
+        activeStream = null;
+      }
+
+      const constraints = {
+        video: {
+          facingMode: { ideal: currentFacingMode },
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        },
+        audio: false
+      };
+
+      try {
+        activeStream = await navigator.mediaDevices.getUserMedia(constraints);
+        video.srcObject = activeStream;
+        await video.play();
+        setCameraButtons();
+        if (count >= MAX) {
+          info.innerText = "Kuota foto Anda sudah habis.";
+        } else {
+          info.innerText = currentFacingMode === 'user'
+            ? "Kamera depan aktif. Posisikan wajah, lalu tekan tombol foto."
+            : "Kamera belakang aktif. Posisikan objek, lalu tekan tombol foto.";
+        }
+      } catch (err) {
+        // Fallback untuk perangkat yang tidak mendukung facingMode tertentu.
+        try {
+          activeStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+          video.srcObject = activeStream;
+          await video.play();
+          setCameraButtons();
+          if (count < MAX) info.innerText = "Kamera aktif. Posisikan wajah, lalu tekan tombol foto.";
+        } catch (fallbackError) {
+          info.innerText = "Gagal membuka kamera. Izinkan akses kamera dan pastikan kamera tidak sedang digunakan aplikasi lain.";
+        }
+      } finally {
+        cameraChanging = false;
+        cameraBackBtn.disabled = false;
+        cameraFrontBtn.disabled = false;
+      }
+    }
+
+    function setCameraButtons() {
+      cameraBackBtn.classList.toggle('active', currentFacingMode === 'environment');
+      cameraFrontBtn.classList.toggle('active', currentFacingMode === 'user');
+      cameraBackBtn.setAttribute('aria-pressed', currentFacingMode === 'environment' ? 'true' : 'false');
+      cameraFrontBtn.setAttribute('aria-pressed', currentFacingMode === 'user' ? 'true' : 'false');
+      cameraModeBadge.innerText = currentFacingMode === 'user' ? 'FRONT CAMERA' : 'REAR CAMERA';
+    }
+
+    async function setCameraMode(mode) {
+      if (cameraChanging || mode === currentFacingMode) return;
+      currentFacingMode = mode;
+      setCameraButtons();
+      info.innerText = "Mengganti kamera...";
+      await startCamera();
+    }
 
     function updateUI() {
       let sisa = MAX - count;
-      quotaSpan.innerText = sisa > 0 ? sisa : 0;
       if (sisa <= 0) {
         snapBtn.disabled = true;
         info.innerText = "Kuota foto Anda sudah habis.";
@@ -111,6 +424,10 @@
 
     function capture() {
       if (count >= MAX) return;
+      if (!video.videoWidth || !video.videoHeight) {
+        info.innerText = "Kamera belum siap. Tunggu sebentar lalu coba kembali.";
+        return;
+      }
       snapBtn.disabled = true;
       info.innerText = "Mengunggah foto...";
 
@@ -152,13 +469,13 @@
 
     function loadGallery() {
       const grid = document.getElementById('galleryGrid');
-      grid.innerHTML = '<p style="grid-column: span 2; color: #777; padding: 20px;">Memuat foto...</p>';
+      grid.innerHTML = '<p style="grid-column: span 2; color: #9ea5b5; padding: 20px;">Memuat foto...</p>';
 
       fetch(BACKEND_URL + "?action=getPhotos")
       .then(res => res.json())
       .then(files => {
         if (!files || files.length === 0) {
-          grid.innerHTML = '<p style="grid-column: span 2; color: #777; padding: 20px;">Belum ada foto.</p>';
+          grid.innerHTML = '<p style="grid-column: span 2; color: #9ea5b5; padding: 20px;">Belum ada foto.</p>';
           return;
         }
 
@@ -174,7 +491,7 @@
         });
       })
       .catch(err => {
-        grid.innerHTML = '<p style="grid-column: span 2; color: red; padding: 20px;">Gagal memuat galeri.</p>';
+        grid.innerHTML = '<p style="grid-column: span 2; color: #ff9bae; padding: 20px;">Gagal memuat galeri.</p>';
       });
     }
   </script>
