@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wedding Photo Booth</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+    body { background: #f4f6f8; text-align: center; padding: 10px; color: #333; }
+    h1 { font-size: 1.3rem; margin-top: 10px; }
+    .card { background: #fff; max-width: 450px; margin: 15px auto; padding: 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .video-box { width: 100%; height: 320px; background: #000; border-radius: 8px; overflow: hidden; position: relative; margin-bottom: 15px; }
+    video { width: 100%; height: 100%; object-fit: cover; }
+    .badge { background: #fff3cd; color: #856404; padding: 6px 12px; border-radius: 20px; display: inline-block; font-weight: bold; font-size: 0.85rem; margin-bottom: 10px; }
+    .btn { background: #e91e63; color: white; border: none; width: 65px; height: 65px; border-radius: 50%; font-size: 1.4rem; cursor: pointer; box-shadow: 0 4px 8px rgba(233,30,99,0.3); }
+    .btn:disabled { background: #ccc; cursor: not-allowed; }
+    .msg { margin-top: 12px; font-size: 0.85rem; color: #555; }
+    .gallery-link { display: block; margin-top: 15px; color: #2196F3; text-decoration: none; font-weight: bold; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+
+  <h1>Wedding Photo Booth</h1>
+  
+  <div class="card">
+    <div class="badge">Sisa Kuota: <span id="quota">5</span>/5</div>
+    
+    <div class="video-box">
+      <video id="cam" autoplay playsinline muted></video>
+    </div>
+    
+    <button id="snapBtn" class="btn" onclick="capture()">📸</button>
+    <div id="info" class="msg">Posisikan wajah, lalu tekan tombol foto</div>
+    
+    <a class="gallery-link" href="#" onclick="openGallery(event)">🖼️ Lihat Galeri Foto</a>
+  </div>
+
+  <canvas id="cvs" style="display:none;"></canvas>
+
+  <script>
+    // -----------------------------------------------------------------
+    // TEMPEL LINK GOOGLE APPS SCRIPT KAMU DI SINI (yang berakhiran /exec)
+    // -----------------------------------------------------------------
+    const BACKEND_URL = "https://script.google.com/macros/s/AKfycbzavoUhqsMd5f-5Pg1ExFVMa5HIo_cmjcj-Oh5tldkBl8d8hBbL72_tR8ozJYyWoVGRAA/exec";
+
+    const MAX = 5;
+    let count = parseInt(localStorage.getItem('wedding_quota') || "0");
+    
+    const video = document.getElementById('cam');
+    const quotaSpan = document.getElementById('quota');
+    const snapBtn = document.getElementById('snapBtn');
+    const info = document.getElementById('info');
+    const canvas = document.getElementById('cvs');
+
+    updateUI();
+
+    // Inisialisasi Kamera dengan opsi fleksibel agar tembus di HP & Laptop
+    navigator.mediaDevices.getUserMedia({ 
+      video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } }, 
+      audio: false 
+    })
+    .then(stream => {
+      video.srcObject = stream;
+      video.play();
+    })
+    .catch(err => {
+      console.error(err);
+      // Fallback ke kamera depan jika kamera belakang gagal
+      navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+      .then(s => { video.srcObject = s; video.play(); })
+      .catch(e => {
+        info.innerText = "Gagal membuka kamera. Pastikan izin kamera diaktifkan di browser!";
+      });
+    });
+
+    function updateUI() {
+      let sisa = MAX - count;
+      quotaSpan.innerText = sisa > 0 ? sisa : 0;
+      if (sisa <= 0) {
+        snapBtn.disabled = true;
+        info.innerText = "Kuota foto Anda sudah habis.";
+      }
+    }
+
+    function capture() {
+      if (count >= MAX) return;
+      snapBtn.disabled = true;
+      info.innerText = "Mengunggah foto ke Google Drive...";
+
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 480;
+      let ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      let base64Data = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
+
+      fetch(BACKEND_URL, {
+        method: "POST",
+        body: JSON.stringify({
+          base64Image: base64Data,
+          mimeType: "image/jpeg",
+          fileName: "wedding_" + Date.now() + ".jpg"
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === "success") {
+          count++;
+          localStorage.setItem('wedding_quota', count);
+          updateUI();
+          if (count < MAX) {
+            snapBtn.disabled = false;
+            info.innerText = "Foto berhasil disimpan!";
+          }
+        } else {
+          info.innerText = "Gagal: " + data.message;
+          snapBtn.disabled = false;
+        }
+      })
+      .catch(err => {
+        info.innerText = "Kesalahan koneksi jaringan.";
+        snapBtn.disabled = false;
+      });
+    }
+
+    function openGallery(e) {
+      e.preventDefault();
+      // Membuka halaman galeri langsung dari Google Drive/GAS
+      window.open(BACKEND_URL + "?action=getPhotos", "_blank");
+    }
+  </script>
+</body>
+</html>
